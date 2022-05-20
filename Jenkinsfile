@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'artilleryio/artillery:latest'
+            image 'artilleryio/artillery:1.7.7'
             args '-u root:root -i --entrypoint='
         }
     }
