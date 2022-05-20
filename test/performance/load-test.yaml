@@ -1,0 +1,55 @@
+config:  
+     target: "https://jsonplaceholder.typicode.com"  
+     phases:
+      - duration: 60      
+        arrivalCount: 10    
+      - duration: 20      
+        arrivalRate: 10      
+        rampTo : 20    
+      - duration: 20      
+        arrivalRate: 10      
+        rampTo : 0
+scenarios: 
+  - name: "Get all Posts - 1st Call"
+    flow:
+      - get:
+          url: "/posts"
+          capture:
+            - json: "$[-1:].id"
+              as: totalPosts
+          expect:
+            - statusCode: 200
+            - equals:
+              - "{{ totalPosts }}"
+              - "100"
+      - think: 5
+
+  - name: "Get Specific Post - 2nd Call"
+    flow:
+      - get:
+          url: "/posts/{{$randomNumber(1,100)}}"
+          capture:
+            - json: "$.id"
+              as: postId
+          expect:
+            - statusCode: 200
+      - think: {{ $randomNumber(1,20) }} 
+
+  - name: "Get Comments for above post - 3rd call"
+    flow:
+      - get:
+          url: "/posts/{{ postId }}/comments"
+          expect:
+            - statusCode: 200
+      - think: 2
+
+  - name: "Add Comment to the Post - 4th Call"
+    flow:
+      - post:
+          url: "/posts/{{ postId }}/comments"
+          json: 
+            name: "Artillery.io"
+            email: "Artillery.io@test.com"
+            body: "This is a simple comment"
+          expect:
+            - statusCode: 201           
